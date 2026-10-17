@@ -1,0 +1,15 @@
+.env
+.env.*
+!.env.example
+
+# Kaggle credentials
+kaggle.json
+
+# Local Python files that may contain secrets
+config.py
+
+# Downloaded competition data
+datos/
+
+__pycache__/
+*.py[cod]
