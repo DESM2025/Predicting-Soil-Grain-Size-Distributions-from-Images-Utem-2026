@@ -2,8 +2,11 @@ import os
 import zipfile
 
 
+project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
 def load_local_env() -> None:
-    env_path = os.path.join(os.path.dirname(__file__), ".env")
+    env_path = os.path.join(project_dir, ".env")
     if not os.path.isfile(env_path):
         return
 
@@ -34,7 +37,7 @@ api = KaggleApi()
 api.authenticate()
 
 competition_name = "soil-grain-size-from-photos"  
-descarga_dir = os.path.join(os.getcwd(), "datos")
+descarga_dir = os.path.join(project_dir, "datos")
 
 # Crear la carpeta "datos" si no existe
 os.makedirs(descarga_dir, exist_ok=True)

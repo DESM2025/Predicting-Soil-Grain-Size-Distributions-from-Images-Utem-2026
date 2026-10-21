@@ -8,8 +8,14 @@ kaggle.json
 # Local Python files that may contain secrets
 config.py
 
-# Downloaded competition data
-datos/
+# Downloaded competition photos
+datos/**/*.jpg
+datos/**/*.JPG
+datos/**/*.jpeg
+datos/**/*.JPEG
+datos/**/*.png
+datos/**/*.PNG
+datos/fotos_aumentadas/
 
 __pycache__/
 *.py[cod]
