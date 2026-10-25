@@ -38,13 +38,69 @@ datos/datos_procesados/training/
 datos/datos_procesados/test/
 ```
 
-## Ejecución
+## Preparación para el modelo
 
-Instalar las dependencias:
+El pipeline de datos ya cuenta con:
+
+- `datasets/splits.py`: división de entrenamiento y validación agrupada por
+  `sample_id`, evitando separar las variantes de una misma muestra.
+- `datasets/granulometria_dataset.py`: clase `GranulometriaDataset` para cargar
+  imágenes RGB de `512 × 512` y sus 11 valores granulométricos.
+- `datasets/dataloaders.py`: creación de los `DataLoader` de entrenamiento y
+  validación.
+
+La configuración validada actualmente es:
+
+```text
+batch_size=8
+num_workers=2
+pin_memory=True
+GPU: NVIDIA GeForce RTX 4060
+```
+
+La prueba del pipeline se ejecuta con:
 
 ```powershell
-pip install -r requirements.txt
+python .\datasets\test_dataloaders.py
 ```
+
+El modelo seleccionado para la siguiente etapa es EfficientNet-B0
+preentrenada mediante transfer learning. Todavía no se ha implementado el
+entrenamiento del modelo.
+
+## Instalación del entorno
+
+Se recomienda utilizar un entorno Conda independiente para evitar conflictos
+entre las librerías científicas de Anaconda y PyTorch. Desde la raíz del
+proyecto, ejecutar:
+
+```powershell
+conda create -n utem python=3.14 nomkl -y
+conda activate utem
+python -m pip install -r requirements.txt
+```
+
+El archivo `requirements.txt` instala PyTorch con CUDA 12.8 para utilizar una
+GPU NVIDIA compatible. Para comprobar que el entorno, los `DataLoaders` y la
+GPU funcionan correctamente:
+
+```powershell
+python .\datasets\test_dataloaders.py
+```
+
+El resultado debe indicar que el dispositivo utilizado es `cuda` y mostrar la
+GPU NVIDIA detectada.
+
+Para trabajar posteriormente en el proyecto, activar siempre el entorno:
+
+```powershell
+conda activate utem
+```
+
+No se recomienda instalar las dependencias directamente en el entorno
+`base`.
+
+## Ejecución
 
 Scripts principales:
 
