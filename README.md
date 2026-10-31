@@ -65,8 +65,56 @@ python .\datasets\test_dataloaders.py
 ```
 
 El modelo seleccionado para la siguiente etapa es EfficientNet-B0
-preentrenada mediante transfer learning. Todavía no se ha implementado el
-entrenamiento del modelo.
+preentrenada mediante transfer learning. El entrenamiento final ya está
+implementado con una división agrupada de 80 % para entrenamiento y 20 % para
+validación.
+
+## Estructura del proyecto
+
+```text
+EDA/                         Análisis exploratorio.
+scripts/                     Descarga, augmentation y preprocesamiento.
+datasets/                    Dataset, división 80/20 y DataLoaders.
+models/                      EfficientNet-B0 y pruebas del modelo.
+training/                    Entrenamiento, validación y monitoreo.
+Avances/                     Documentación de los avances.
+datos/                       Datos locales; las imágenes pesadas no se suben.
+resultados/entrenamiento/    Modelo final y resultados locales.
+```
+
+Los módulos principales de `training/` son:
+
+- `training/cross_validation.py`: registro histórico de folds agrupados por
+  `sample_id`, utilizado para comparar configuraciones.
+- `training/monitoring.py`: calcula métricas y genera historiales y gráficos.
+- `training/train.py`: ejecuta actualmente un único entrenamiento final con
+  validación 80/20.
+
+La configuración final actual es:
+
+```text
+EfficientNet-B0 con el último bloque descongelado
+AdamW
+Learning rate de la cabeza: 1e-3
+Learning rate del backbone: 1e-5
+Batch size: 8
+20 épocas
+80 % training / 20 % validación
+```
+
+La división actual contiene 618 registros para training y 144 para validación,
+sin `sample_id` compartidos. El modelo final obtuvo:
+
+```text
+MAE: 9.47 puntos porcentuales
+RMSE: 14.12 puntos porcentuales
+MSE: 199.33
+R²: -4.2936
+```
+
+El MAE y el RMSE son las métricas principales para interpretar el error en
+puntos porcentuales. El R² se conserva como referencia complementaria, ya que
+algunas salidas tienen poca variabilidad en la división de validación.
 
 ## Instalación del entorno
 
@@ -108,6 +156,20 @@ Scripts principales:
 python .\EDA\eda.py
 python .\scripts\augmentation.py
 python .\scripts\redimensionar_imagenes.py
+python -m training.train
 ```
+
+El comando `python -m training.train` ejecuta actualmente un único
+entrenamiento final con una división agrupada de 80 % para entrenamiento y
+20 % para validación. Usa la configuración seleccionada: fine-tuning del
+último bloque, `learning_rate=1e-3` para la cabeza,
+`learning_rate=1e-5` para el backbone y 20 épocas. Los registros históricos
+de la validación cruzada se conservan en
+`resultados/entrenamiento/monitoreo_validacion_cruzada/`.
+
+El entrenamiento final genera `modelo_final.pt`, el historial de pérdidas, las
+métricas de validación y los gráficos de diagnóstico en
+`resultados/entrenamiento/`. Los experimentos anteriores se conservan como
+registro local y están excluidos de Git.
 
 Las credenciales de Kaggle se configuran localmente mediante `.env`. Este archivo no debe subirse al repositorio.

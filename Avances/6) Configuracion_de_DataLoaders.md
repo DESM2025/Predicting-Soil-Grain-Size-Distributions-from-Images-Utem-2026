@@ -10,3 +10,11 @@ La configuración fue probada correctamente utilizando la GPU NVIDIA GeForce RTX
 - Etiquetas: (8, 11).
 
 El tamaño del batch podrá aumentarse posteriormente. Las épocas, tasa de aprendizaje, el optimizador y la función de pérdida se definirán en la etapa de entrenamiento del modelo EfficientNet-B0.
+
+Prueba de DataLoaders completada correctamente.
+- Dispositivo: cuda (NVIDIA GeForce RTX 4060)
+- Batches de training: 78
+- Batches de validación: 18
+- Training - imágenes: (8, 3, 512, 512)
+- Training - etiquetas: (8, 11)
+- Validación - imágenes: (8, 3, 512, 512)

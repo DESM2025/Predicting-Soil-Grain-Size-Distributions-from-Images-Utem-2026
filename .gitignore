@@ -17,6 +17,7 @@ datos/**/*.png
 datos/**/*.PNG
 datos/fotos_aumentadas/
 datos/datos_procesados/
+resultados/entrenamiento/
 
 __pycache__/
 *.py[cod]
