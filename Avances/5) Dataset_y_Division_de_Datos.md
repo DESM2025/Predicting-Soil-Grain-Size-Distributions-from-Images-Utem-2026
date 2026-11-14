@@ -1,21 +1,23 @@
-### Implementación del dataset y división de datos
+# 5) Dataset y division de datos
 
-Se implementó una clase GranulometriaDataset utilizando PyTorch para cargar las imágenes redimensionadas y asociarlas con sus respectivas curvas granulométricas. Las imágenes se convierten a RGB, se ajustan a 512 × 512 píxeles mediante padding para conservar sus proporciones y se normalizan antes de ser entregadas al modelo.
+## Que se hizo
 
-También se implementó una división agrupada por sample_id, evitando que imágenes aumentadas de una misma muestra aparezcan simultáneamente en los conjuntos de entrenamiento y validación. La división utiliza una semilla fija para mantener resultados reproducibles.
+- Clase `GranulometriaDataset` (`datasets/granulometria_dataset.py`). Para cada fila del CSV:
+  - Carga la imagen y la convierte a RGB.
+  - La ajusta a 512x512 pixeles agregando bordes negros (padding), para no deformarla.
+  - La normaliza con los valores de ImageNet, que son los que espera el modelo preentrenado.
+  - Entrega la imagen junto con sus 11 valores de curva.
+- Funcion `split_by_sample_id` (`datasets/splits.py`). Separa 80 % para training y 20 % para validacion por `sample_id`, con semilla fija 42. Todas las imagenes de una misma muestra (originales y aumentadas) quedan en el mismo conjunto.
+- Script de prueba `datasets/test_granulometria_dataset.py`.
 
-La validación del pipeline se realizó mediante un script de prueba, comprobando que las rutas existan, que las imágenes y etiquetas tengan las dimensiones esperadas y que el DataLoader genere batches correctamente.
+## Por que se divide por muestra
 
-Los resultados obtenidos fueron:
+Si una foto queda en training y su version rotada queda en validacion, el modelo se evaluaria con algo que practicamente ya vio, y el error saldria artificialmente bajo. Al dividir por muestra, la validacion siempre usa suelos que el modelo no conoce.
 
-- 618 filas para entrenamiento y 144 para validación.
-- 19 sample_id en entrenamiento y 5 en validación.
-- 0 sample_id compartidos entre ambos conjuntos.
-- Imágenes individuales con forma (3, 512, 512).
-- Etiquetas individuales con forma (11,).
-- Batches de imágenes con forma (2, 3, 512, 512).
-- Batches de etiquetas con forma (2, 11).
+## Resultados
 
-La prueba finalizó correctamente, dejando preparado el pipeline de datos para conectar posteriormente un modelo de transfer learning.
-
-Finalmente, se configuró PyTorch con soporte CUDA y se verificó el reconocimiento de la GPU NVIDIA GeForce RTX 4060. Para la siguiente etapa se seleccionó EfficientNet-B0 preentrenada mediante transfer learning, que utilizará el pipeline de datos ya validado.
+- Training: 618 imagenes de 19 muestras.
+- Validacion: 144 imagenes de 5 muestras.
+- 0 muestras compartidas entre training y validacion.
+- Cada imagen tiene forma (3, 512, 512) y cada etiqueta tiene forma (11,).
+- Batch de prueba de 2 imagenes: imagenes (2, 3, 512, 512) y etiquetas (2, 11).

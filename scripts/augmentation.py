@@ -24,6 +24,11 @@ VARIANTES_POR_FOTO = 5
 PROBABILIDAD_RUIDO = 0.30   # 30% de probabilidad de ruido
 DESVIACION_RUIDO = 4.0      # Ruido leve (escala 0-255, simula ISO de sensor)
 
+# Semilla fija para que las variantes generadas sean siempre las mismas
+SEMILLA = 42
+random.seed(SEMILLA)
+np.random.seed(SEMILLA)
+
 os.makedirs(CARPETA_SALIDA, exist_ok=True)
 
 df_curvas = pd.read_csv(CSV_GRANULOMETRIA)
@@ -34,7 +39,8 @@ df_curvas[col_id] = df_curvas[col_id].astype(str).str.strip()
 # Convertir el DataFrame a un diccionario para búsqueda por ID
 curvas_dict = df_curvas.set_index(col_id).to_dict(orient="index")
 
-archivos_en_carpeta = [f for f in os.listdir(CARPETA_FOTOS_ORIGINALES) if f.lower().endswith(('.jpg', '.jpeg', '.png'))]
+# Orden fijo de los archivos: con la semilla, cada foto recibe siempre las mismas variantes
+archivos_en_carpeta = sorted(f for f in os.listdir(CARPETA_FOTOS_ORIGINALES) if f.lower().endswith(('.jpg', '.jpeg', '.png')))
 total_fotos = len(archivos_en_carpeta)
 
 print(f"Se encontraron {total_fotos} fotos en '{CARPETA_FOTOS_ORIGINALES}'.")

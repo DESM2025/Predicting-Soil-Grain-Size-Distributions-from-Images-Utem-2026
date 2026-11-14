@@ -1,9 +1,19 @@
-### Redimensionamiento de imágenes del dataset
+# 3) Redimensionamiento de imagenes
 
-Se desarrolló e implementó un script en Python utilizando la biblioteca Pillow para reducir la resolución de las fotografías del conjunto de datos, estableciendo un máximo de 1024 píxeles en su dimensión mayor y conservando la relación de aspecto original.
+## Que se hizo
 
-Se procesaron exitosamente **162 imágenes, correspondientes a 127 fotografías de entrenamiento y 35 de prueba**, sin registrar errores durante la ejecución.
+Se creo el script `scripts/redimensionar_imagenes.py` (libreria Pillow). Para cada imagen:
 
-La validación del archivo `reporte_redimensionamiento.csv` permitió comprobar que todas las imágenes cumplen con el límite de resolución establecido, mantienen sus proporciones originales dentro de las diferencias de redondeo y no presentan ampliaciones innecesarias. Asimismo, no se identificaron registros incompletos ni rutas duplicadas.
+- Reduce la imagen para que su lado mayor mida como maximo 1024 pixeles.
+- Mantiene la proporcion original (no deforma la imagen).
+- Corrige la orientacion segun los datos EXIF de la foto.
+- No agranda imagenes que ya son mas chicas.
+- Guarda el resultado en una carpeta aparte, sin modificar las fotos originales.
+- Genera el reporte `datos/datos_procesados/reporte_redimensionamiento.csv` con el tamano original, el tamano nuevo y la escala de cada imagen.
 
-Las imágenes procesadas fueron almacenadas en una carpeta independiente, preservando los archivos originales. Este procedimiento permite disponer de un conjunto de fotografías de menor resolución para las posteriores etapas de procesamiento y entrenamiento de modelos de visión por computadora.
+## Resultados
+
+- Primera ejecucion sobre las fotos originales: 162 imagenes (127 de training y 35 de test), sin errores.
+- Todas quedaron con su lado mayor de 1024 pixeles o menos y con su proporcion original.
+- Las fotos de training ya venian en baja resolucion (1600x720, 1599x1200 o 720x1600 pixeles), salvo 3 fotos de 4096x2304. Las fotos de test vienen en alta resolucion (entre 3024 y 5712 pixeles por lado).
+- El script se volvio a usar despues del data augmentation (ver avance 4).

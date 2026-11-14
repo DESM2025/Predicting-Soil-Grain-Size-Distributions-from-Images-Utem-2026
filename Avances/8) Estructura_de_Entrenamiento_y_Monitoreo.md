@@ -1,217 +1,149 @@
-### Entrenamiento, validación cruzada y monitoreo
+# 8) Entrenamiento, validacion cruzada y monitoreo
 
-Se creó la carpeta `training/` para separar el entrenamiento de la preparación
-de datos y de la definición del modelo. La implementación contempla dos
-etapas: primero, la validación cruzada para comparar configuraciones; después,
-el entrenamiento final de un único modelo con todos los datos de training.
+## Que se hizo
 
-La implementación incluye:
+Codigo en la carpeta `training/`:
 
-- Validación cruzada agrupada por `sample_id`, evitando que las variantes de
-  una misma muestra aparezcan en training y validación.
-- Entrenamiento por épocas con EfficientNet-B0.
-- Funciones separadas para entrenamiento y validación de cada época.
-- Registro de `train_loss`, `validation_loss` y `learning_rate`.
-- Exportación del historial a CSV.
-- Gráficos formales de pérdida con una paleta azul sobria.
-- MAE, RMSE, MSE y R² para cada fold y para el resumen global.
-- MAE por tamaño de partícula.
-- Gráficos de valores reales contra predichos y curvas granulométricas.
-- Guardado del mejor checkpoint de cada fold.
-- Entrenamiento final de un único modelo con la configuración seleccionada.
-- Guardado de `modelo_final.pt` y del historial del entrenamiento final.
+- `train.py`: entrenamiento por epocas, validacion y entrenamiento del modelo final.
+- `cross_validation.py`: creacion de los folds de la validacion cruzada.
+- `monitoring.py`: calculo de metricas (MSE, MAE, RMSE, R2 y MAE por tamano), historial y graficos.
+- `ejecutar_validacion_cruzada.py`: vuelve a ejecutar la validacion cruzada con la configuracion final.
 
-La configuración inicial utilizada como baseline fue:
+Configuracion comun a todos los entrenamientos: perdida MSE, optimizador AdamW, weight decay 1e-4 y batch size 8. En cada epoca se registra la perdida de training, la perdida de validacion y el learning rate. Al final se usa el modelo de la epoca con menor perdida de validacion.
 
-- Optimizador: AdamW.
-- Learning rate: `1e-3`.
-- Weight decay: `1e-4`.
-- Batch size: `8`.
-- Épocas: `10`.
-- Backbone de EfficientNet-B0 congelado inicialmente.
-- Validación cruzada: `5` folds.
+## Como se aplico la validacion cruzada
 
-El baseline obtuvo:
+1. Las 24 muestras se dividen en 5 grupos (folds) de 4 o 5 muestras cada uno.
+2. Se entrenan 5 modelos. Cada modelo entrena con 4 grupos y se evalua con el grupo que queda fuera.
+3. Se rota el grupo de evaluacion hasta que cada grupo se usa una vez para evaluar.
+4. Se juntan las predicciones de los 5 modelos (las 762 imagenes) y se calcula el error sobre todas. Ese es el resultado final.
 
-- MSE: `600.60`.
-- MAE: `18.02` puntos porcentuales.
-- RMSE: `24.51` puntos porcentuales.
-- R²: `-0.2879`.
+Asi, cada modelo siempre se evalua con muestras que no vio durante su entrenamiento, y todas las muestras se usan una vez para evaluar.
 
-El R² negativo indicó que el modelo todavía era inferior a una referencia que
-predice el promedio de cada salida.
+La division es por muestra (`sample_id`), no por imagen. Cada una de las 24 muestras tiene entre 3 y 8 fotos, y cada foto genera 6 imagenes (ver avance 4), por lo que todas las imagenes de una muestra quedan siempre en el mismo grupo. Si se dividiera por imagen, algunas fotos de una muestra quedarian en training y otras en validacion, y el modelo se evaluaria con un suelo que ya conoce. Esta tecnica se llama Group K-Fold. Se uso semilla 42, por lo que todas las configuraciones se evaluaron con los mismos 5 grupos y sus resultados se pueden comparar directamente.
 
-Para ejecutar una primera validación cruzada:
+Cantidad de imagenes por fold (6 imagenes por foto: la original y 5 variantes):
 
-```powershell
-python -m training.train
-```
+| Fold | Imagenes train | Muestras train | Imagenes validacion | Muestras validacion | Muestras en validacion |
+|---|---|---|---|---|---|
+| 1 | 606 | 19 | 156 | 5 | F827, G190, H183, H367, H493 |
+| 2 | 582 | 19 | 180 | 5 | H038, H371, H374, H549, H668 |
+| 3 | 600 | 19 | 162 | 5 | H030, H037, H368, H615, H666 |
+| 4 | 618 | 19 | 144 | 5 | H126, H405, H616, H617, H637 |
+| 5 | 642 | 20 | 120 | 4 | H181, H366, H372, H516 |
+| Total | | | 762 | 24 | |
 
-Los checkpoints, historiales y gráficos se guardan en
-`resultados/entrenamiento/`, una carpeta excluida del repositorio.
 
-La pérdida MSE se conserva para optimizar el modelo, pero el resultado se
-interpreta principalmente mediante MAE y RMSE, expresados en puntos
-porcentuales. La matriz de confusión no aplica directamente porque el problema
-es una regresión multisalida, no una clasificación.
+Cada muestra aparece en validacion una sola vez. Sumando los 5 folds, las 762 imagenes (24 muestras) se usan para evaluar, cada una con un modelo que no la vio. La cantidad de imagenes cambia entre folds porque no todas las muestras tienen la misma cantidad de fotos.
 
-## Comparación de configuraciones
+## Como se calculan las metricas de la validacion cruzada
 
-Se evaluó una segunda configuración manteniendo el backbone congelado y usando
-AdamW con `learning_rate=1e-4` durante 20 épocas:
+- Por fold: cada modelo se evalua solo con su grupo de validacion (`metrics_fold_1.csv` a `metrics_fold_5.csv`).
+- Global: se juntan las predicciones de los 5 folds (762 imagenes) y se calculan las metricas sobre todas juntas (`metrics_summary.csv`). Este es el resultado principal.
 
-```powershell
-python -m training.train --learning-rate 0.0001 --epochs 20 `
-  --experiment-name adamw_lr1e-4_20epocas
-```
+El promedio simple de los 5 folds da un valor algo distinto al global, porque los folds no tienen la misma cantidad de imagenes. Para la configuracion final, el MAE global es 13.60 y el promedio simple es 13.41.
 
-El resultado fue inferior al baseline:
+## Configuraciones comparadas con validacion cruzada
 
-- MSE: `2545.19`.
-- MAE: `38.78` puntos porcentuales.
-- RMSE: `50.45` puntos porcentuales.
-- R²: `-4.4577`.
+MAE y RMSE en puntos porcentuales.
 
-Las curvas mostraron que el modelo todavía estaba subentrenado al llegar a la
-época 20. Por lo tanto, `1e-4` no fue seleccionado para la siguiente etapa con
-el backbone congelado.
+| Configuracion | Epocas | MAE | RMSE | R2 |
+|---|---|---|---|---|
+| 1. Backbone congelado, lr 1e-3 | 10 | 18.02 | 24.51 | -0.29 |
+| 2. Backbone congelado, lr 1e-4 | 20 | 38.78 | 50.45 | -4.46 |
+| 3. Backbone congelado, lr 1e-3 | 20 | 14.49 | 20.50 | 0.10 |
+| 4. Ultimo bloque descongelado, lr 1e-3 capa final y 1e-5 backbone | 20 | 13.60 | 19.29 | 0.20 |
 
-Luego se evaluó AdamW con `learning_rate=1e-3` durante 20 épocas:
+- Con lr 1e-4 el modelo aprende demasiado lento: a las 20 epocas todavia no converge.
+- Con lr 1e-3, pasar de 10 a 20 epocas baja el MAE de 18.02 a 14.49.
+- Descongelar el ultimo bloque del backbone baja el MAE a 13.60. Ademas tiene menor error que las otras 3 configuraciones en los 5 folds.
 
-```powershell
-python -m training.train --learning-rate 0.001 --epochs 20 `
-  --experiment-name adamw_lr1e-3_20epocas
-```
+MAE por fold de cada configuracion:
 
-Esta configuración obtuvo el mejor resultado hasta el momento:
+| Fold | Config. 1 | Config. 2 | Config. 3 | Config. 4 | Baseline |
+|---|---|---|---|---|---|
+| 1 | 25.86 | 45.30 | 21.30 | 19.57 | 17.35 |
+| 2 | 17.02 | 37.36 | 13.97 | 13.21 | 16.07 |
+| 3 | 15.90 | 35.61 | 12.17 | 11.56 | 13.34 |
+| 4 | 18.10 | 46.02 | 14.81 | 13.87 | 17.49 |
+| 5 | 12.52 | 28.05 | 9.19 | 8.82 | 17.89 |
+| Global | 18.02 | 38.78 | 14.49 | 13.60 | 16.31 |
 
-- MSE: `420.10`.
-- MAE: `14.49` puntos porcentuales.
-- RMSE: `20.50` puntos porcentuales.
-- R²: `0.0992`.
+Se selecciono la configuracion 4.
 
-La comparación muestra que aumentar de 10 a 20 épocas manteniendo
-`learning_rate=1e-3` redujo el MAE de `18.02` a `14.49` puntos porcentuales y
-mejoró el R² desde `-0.2879` hasta `0.0992`. El modelo pasó a superar la
-referencia basada en promedios.
+La columna Baseline es una referencia: predecir siempre la curva promedio del training, sin mirar la imagen. La configuracion 4 mejora esa referencia en 4 de los 5 folds. En el fold 1 queda peor (19.57 contra 17.35).
 
-La configuración recomendada actualmente es:
+El grafico `resultados/entrenamiento/comparacion_configuraciones.png` (generado con `scripts/grafico_comparacion_configuraciones.py`) muestra el MAE global de las 4 configuraciones junto a la referencia.
 
-- EfficientNet-B0 con backbone congelado.
-- Optimizador AdamW.
-- Learning rate: `1e-3`.
-- Weight decay: `1e-4`.
-- Batch size: `8`.
-- Épocas: `20`.
-- Validación cruzada agrupada: `5` folds.
+Nota sobre la configuracion 4: los resultados de esta tabla corresponden a la ejecucion del 14 de noviembre con `python -m training.ejecutar_validacion_cruzada`, guardada en `resultados/entrenamiento/validacion_cruzada/`. La ejecucion original de octubre (carpeta `finetuning_last_block_lr1e-5/`) dio un MAE global de 13.79. La diferencia es pequena y se debe a la aleatoriedad del entrenamiento en GPU. Las conclusiones no cambian.
 
-Esta configuración es la mejor línea base disponible, pero todavía no es el
-entrenamiento final. El siguiente paso será evaluar fine-tuning parcial de las
-últimas capas de EfficientNet-B0 con un learning rate menor para el backbone.
+## Entrenamiento del modelo final
 
-La implementación permite realizar ese experimento en la misma carpeta de
-código, sin alterar la configuración anterior. Por defecto,
-`--unfreeze-last-blocks=0` mantiene el backbone congelado. Para el primer
-experimento de fine-tuning parcial se puede ejecutar:
+Con la configuracion 4 se entreno un solo modelo con la division 80/20 por muestra del avance 5, durante 20 epocas:
 
-```powershell
-python -m training.train --learning-rate 0.001 --backbone-learning-rate 0.00001 `
-  --unfreeze-last-blocks 1 --epochs 20 `
-  --experiment-name finetuning_last_block_lr1e-5
-```
+- Training: 618 imagenes (19 muestras).
+- Validacion: 144 imagenes (5 muestras: H183, H368, H374, H516 y H615).
 
-En esta configuración la nueva capa final utiliza `1e-3` y el último bloque
-descongelado utiliza `1e-5`. Los resultados se guardan en una subcarpeta
-independiente para conservar la comparación con la línea base.
+Esta division es una sola particion. No coincide con ninguno de los folds de la validacion cruzada. La mejor epoca fue la 19, con perdida de validacion de 199.33.
 
-El fine-tuning parcial mejoró el rendimiento global respecto a la extracción de
-características:
+Resultados sobre la validacion:
 
-| Métrica | Feature extraction | Fine-tuning parcial |
-|---|---:|---:|
-| MSE | `420.10` | `384.56` |
-| MAE | `14.49` | `13.79` |
-| RMSE | `20.50` | `19.61` |
-| R² | `0.0992` | `0.1754` |
+- MSE: 199.33
+- MAE: 9.47 puntos porcentuales
+- RMSE: 14.12 puntos porcentuales
+- R2: -4.29
 
-El MAE disminuyó de `14.49` a `13.79` puntos porcentuales y el RMSE bajó de
-`20.50` a `19.61` puntos. Esto indica que el modelo redujo tanto el error
-promedio como la influencia de errores grandes. El R² aumentó de `0.0992` a
-`0.1754`, por lo que el modelo explica aproximadamente el 17.5 % de la
-variabilidad observada y supera con mayor margen la referencia basada en
-predecir los promedios.
+MAE por tamano de particula (puntos porcentuales):
 
-La mejora fue especialmente visible en las granulometrías medianas y grandes,
-desde `0.63 mm` hasta `200 mm`. En esas salidas el MAE disminuyó
-aproximadamente entre 1 y 1.6 puntos porcentuales. Los tamaños pequeños se
-mantuvieron prácticamente estables, con errores bajos, mientras que las
-granulometrías de `0.063 mm` y `0.2 mm` presentaron cambios menores.
+| mm | 0.002 | 0.0063 | 0.02 | 0.063 | 0.2 | 0.63 | 2 | 6.3 | 20 | 63 | 200 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| MAE | 1.00 | 1.93 | 4.37 | 6.43 | 8.52 | 9.60 | 9.50 | 13.79 | 15.80 | 16.19 | 17.07 |
 
-Por lo tanto, el fine-tuning parcial del último bloque fue beneficioso y se
-establece como la configuración seleccionada para el entrenamiento final.
+Interpretacion:
 
-## Entrenamiento final de un solo modelo
+- MAE de 9.47: en promedio, cada valor de la curva predicha se equivoca en 9.5 puntos porcentuales.
+- El error aumenta con el tamano de particula: es bajo en los tamanos finos (entre 1 y 6.4 puntos hasta 0.063 mm) y alto en los gruesos (entre 13.8 y 17.1 puntos desde 6.3 mm).
+- El MAE de 9.47 no se debe comparar con el 13.60 de la validacion cruzada. El 9.47 se mide sobre solo 5 muestras de una particion. El 13.60 se mide sobre las 24 muestras y es la estimacion mas confiable del desempeno del modelo.
 
-El comando principal dejó de ejecutar validación cruzada para el entrenamiento
-final. Ahora entrena un único modelo con una división agrupada de 80 % para
-training y 20 % para validación, utilizando `sample_id` para evitar que las
-variantes de una misma muestra queden en conjuntos distintos. Usa la
-configuración seleccionada:
+## Hallazgo sobre el R2
 
-- Último bloque de EfficientNet-B0 descongelado.
-- AdamW.
-- Learning rate de la capa final: `1e-3`.
-- Learning rate del backbone: `1e-5`.
-- Batch size: `8`.
-- Épocas: `20`.
+El R2 compara el error del modelo con la variacion que tienen los datos reales con los que se evalua. Si los datos reales varian poco, cualquier error hace que el R2 baje mucho, aunque el error sea chico.
 
-La división utilizada contiene 618 registros para training y 144 para
-validación, sin `sample_id` compartidos entre ambos conjuntos. De esta forma,
-el entrenamiento final permite revisar el comportamiento del modelo en cada
-época sin repetir cinco entrenamientos independientes.
+| Evaluacion | Muestras evaluadas | MAE | R2 |
+|---|---|---|---|
+| Validacion cruzada, global | 24 | 13.60 | 0.20 |
+| Validacion cruzada, promedio de los 5 folds | 4 a 5 por fold | 13.41 | -0.92 |
+| Fold 5 | 4 | 8.82 | -4.55 |
+| Modelo final (80/20) | 5 | 9.47 | -4.29 |
 
-Para ejecutarlo:
+- Con las 24 muestras juntas hay mucha variacion entre curvas, y el R2 es positivo (0.20).
+- Con 4 o 5 muestras parecidas entre si hay poca variacion, y el R2 sale muy negativo aunque el MAE sea bajo. El fold 5 tiene el menor MAE de todos (8.82) y aun asi un R2 de -4.55.
+- El R2 negativo del modelo final (-4.29) se explica por esto, no porque el modelo sea peor.
 
-```powershell
-python -m training.train
-```
+Conclusion: con pocas muestras de evaluacion el R2 no es confiable. Se usa el MAE como metrica principal y el R2 solo se reporta con la validacion cruzada global.
 
-El modelo se guarda como `modelo_final.pt`, junto con
-`historial_entrenamiento_final.csv` y
-`perdida_entrenamiento_final.png`. Los artefactos generados anteriormente por
-los folds se reemplazan en la carpeta principal, mientras que sus historiales
-y gráficos se conservan en
-`resultados/entrenamiento/monitoreo_validacion_cruzada/`.
+## Limitaciones
 
-Durante cada época se muestran `train_loss` y `val_loss`. Al finalizar, se
-calculan MAE, RMSE, MSE y R² sobre el 20 % de validación, y se guardan las
-métricas y gráficos correspondientes.
+- Con solo 24 muestras, el error cambia mucho segun que muestras quedan en validacion (MAE entre 8.8 y 19.6 segun el fold).
+- La epoca que se guarda se elige con el mismo conjunto de validacion con el que se reportan las metricas. Esto hace que los resultados sean levemente optimistas.
+- La salida del modelo no esta restringida: puede entregar valores fuera de 0-100 o curvas que disminuyen. Esto se corrige con el post-procesamiento del Sprint 3.
+- La evaluacion final e independiente es el test de Kaggle: 10 muestras que no se usaron en ninguna etapa del entrenamiento ni de la seleccion del modelo.
 
-### Resultado del modelo final
+## Como ejecutar
 
-El entrenamiento final terminó correctamente en 20 épocas y guardó el mejor
-checkpoint en la época 19, que obtuvo una pérdida de validación de `199.3261`.
-Las métricas principales de este modelo son:
+- Entrenamiento final: `python -m training.train`
+- Validacion cruzada con la configuracion 4: `python -m training.ejecutar_validacion_cruzada`
+- Validacion cruzada con otra configuracion, por ejemplo la 3: `python -m training.ejecutar_validacion_cruzada --unfreeze-last-blocks 0 --output-dir resultados/entrenamiento/validacion_cruzada_config3`
 
-- MSE: `199.33`.
-- MAE: `9.47` puntos porcentuales.
-- RMSE: `14.12` puntos porcentuales.
-- R²: `-4.2936`.
+Las configuraciones 1 a 3 se ejecutaron con una version anterior de `train.py`, que ya no tiene la opcion `--experiment-name`. Hoy se repiten con `ejecutar_validacion_cruzada.py`.
 
-El MAE indica que el modelo presenta un error absoluto promedio de
-aproximadamente 9.47 puntos porcentuales sobre las 11 granulometrías. El RMSE
-de 14.12 muestra que existen algunos errores mayores que elevan la magnitud
-del error al penalizar las diferencias grandes.
+## Archivos de resultados
 
-El R² negativo debe interpretarse con cautela en esta división. El conjunto de
-validación contiene poca variabilidad en algunas salidas, especialmente en
-`63 mm` y `200 mm`, donde los valores reales son muy similares o constantes.
-En ese contexto, el R² puede ser muy negativo incluso cuando el MAE y el RMSE
-son relativamente bajos. Por esta razón, para este modelo se priorizan el MAE
-y el RMSE como medidas directas del error en puntos porcentuales, mientras que
-el R² se informa como referencia complementaria.
+- `resultados/entrenamiento/monitoreo_validacion_cruzada/`: configuracion 1.
+- `resultados/entrenamiento/adamw_lr1e-4_20epocas/`: configuracion 2.
+- `resultados/entrenamiento/adamw_lr1e-3_20epocas/`: configuracion 3.
+- `resultados/entrenamiento/validacion_cruzada/`: configuracion 4, ejecucion del 14 de noviembre (incluye `resumen_por_fold.csv` y `configuracion.json`).
+- `resultados/entrenamiento/finetuning_last_block_lr1e-5/`: configuracion 4, ejecucion original de octubre.
+- `resultados/entrenamiento/`: modelo final (`modelo_final.pt`, `historial_entrenamiento_final.csv`, `metricas_validacion_final.csv` y graficos) y `comparacion_configuraciones.png`.
 
-Este resultado corresponde al modelo final evaluado con una división única
-agrupada de 80 % training y 20 % validación. La validación cruzada queda
-únicamente como registro histórico de experimentación y no como el resultado
-principal del proyecto.
+Cada carpeta de configuracion contiene las metricas, el historial y el grafico de perdida de cada fold, el resumen global (`metrics_summary.csv`) y los graficos de valores reales contra predichos, MAE por tamano y curvas granulometricas.

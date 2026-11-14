@@ -1,20 +1,21 @@
-### Configuración de DataLoaders
+# 6) Configuracion de DataLoaders
 
-Se implementó una función para crear los DataLoader de entrenamiento y validación a partir del dataset previamente dividido por sample_id. Esta configuración permite entregar los datos al futuro modelo en batches, manteniendo separados ambos conjuntos.
+## Que se hizo
 
-Se estableció un batch_size de 8 imágenes, con una resolución de entrada de 512 × 512 píxeles y 11 valores granulométricos por muestra. Para acelerar la carga de datos se configuraron 2 workers, pin_memory=True, shuffle=True para entrenamiento y shuffle=False para validación.
+Se creo la funcion `create_train_val_loaders` (`datasets/dataloaders.py`). Usa la division por muestra del avance 5 y entrega los datos al modelo en batches.
 
-La configuración fue probada correctamente utilizando la GPU NVIDIA GeForce RTX 4060. Se generaron 78 batches de entrenamiento y 18 de validación, con las siguientes dimensiones:
+Configuracion:
 
-- Imágenes: (8, 3, 512, 512).
-- Etiquetas: (8, 11).
+- `batch_size = 8`
+- `num_workers = 2`
+- `pin_memory = True`
+- `shuffle = True` en training y `shuffle = False` en validacion.
 
-El tamaño del batch podrá aumentarse posteriormente. Las épocas, tasa de aprendizaje, el optimizador y la función de pérdida se definirán en la etapa de entrenamiento del modelo EfficientNet-B0.
+Se probo con el script `datasets/test_dataloaders.py` en la GPU NVIDIA GeForce RTX 4060.
 
-Prueba de DataLoaders completada correctamente.
-- Dispositivo: cuda (NVIDIA GeForce RTX 4060)
-- Batches de training: 78
-- Batches de validación: 18
-- Training - imágenes: (8, 3, 512, 512)
-- Training - etiquetas: (8, 11)
-- Validación - imágenes: (8, 3, 512, 512)
+## Resultados
+
+- 78 batches de training (618 imagenes) y 18 batches de validacion (144 imagenes).
+- Batch de imagenes: (8, 3, 512, 512).
+- Batch de etiquetas: (8, 11).
+- La prueba termino sin errores.

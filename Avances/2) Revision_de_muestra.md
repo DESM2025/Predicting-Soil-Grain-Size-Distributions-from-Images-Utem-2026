@@ -1,11 +1,20 @@
-### Comparación visual de muestras fotografiadas con diferentes dispositivos
+# 2) Revision visual de muestras
 
-Se realizó una inspección comparativa de 18 fotografías correspondientes a tres muestras de suelo (F827, G190 y H038), utilizando imágenes capturadas mediante dispositivos Samsung A52 y Motorola Edge.
+## Que se hizo
 
-El análisis permitió identificar diferencias en el encuadre, la orientación, la iluminación y el nivel de detalle aparente de las partículas. Las fotografías del Samsung A52 presentan una perspectiva más amplia de las muestras, mientras que las del Motorola Edge muestran regiones más cercanas de la superficie, permitiendo distinguir con mayor claridad algunos fragmentos y características de textura.
+Se revisaron 18 fotos de 3 muestras (F827, G190 y H038), tomadas con dos celulares: Samsung A52 (11 fotos) y Motorola Edge (7 fotos). Cada foto se comparo con la curva granulometrica de su muestra.
 
-Asimismo, se observaron diferencias visuales entre las muestras estudiadas, consistentes con sus respectivas distribuciones granulométricas. F827 presenta una textura predominantemente fina, G190 una combinación de material fino y granular, y H038 una mayor presencia de fragmentos distinguibles.
+## Resultados
 
-Estos resultados evidencian que las fotografías contienen información visual potencialmente útil para estimar características granulométricas. Sin embargo, también muestran que las diferencias entre dispositivos y condiciones de captura pueden introducir variabilidad adicional en los datos.
+- Las fotos del Samsung A52 muestran una zona mas amplia del suelo. Las del Motorola Edge muestran una zona mas cercana, con mas detalle de las particulas.
+- Hay diferencias de encuadre, orientacion e iluminacion entre fotos.
+- Lo que se ve en las fotos coincide con las curvas:
+  - F827 es mayormente fina (90 % del material pasa por 0.063 mm).
+  - G190 mezcla material fino y granular.
+  - H038 tiene mas fragmentos grandes visibles.
 
-En consecuencia, será importante considerar técnicas de preprocesamiento y normalización de imágenes, así como mecanismos que permitan conservar información relevante sobre su escala física. Además, las observaciones sugieren que los métodos de segmentación podrían resultar más adecuados para identificar partículas distinguibles que para caracterizar directamente las fracciones más finas del suelo.
+## Conclusion
+
+- Las fotos contienen informacion util para estimar la granulometria.
+- El celular y las condiciones de captura agregan variacion entre fotos. Hay que estandarizar las imagenes y tener en cuenta su escala fisica (pixeles por mm de cada celular, archivo `datos/ppm_updated.csv`).
+- Las particulas finas no se distinguen individualmente en las fotos. Solo las particulas mas grandes se podrian identificar una por una (por ejemplo, con segmentacion).

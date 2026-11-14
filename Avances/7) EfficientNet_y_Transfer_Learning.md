@@ -1,27 +1,18 @@
-### Instalación del modelo y prueba de transfer learning
+# 7) EfficientNet-B0 y transfer learning
 
-Se configuró el entorno Conda utem  con las dependencias necesarias para utilizar PyTorch y torchvision con soporte CUDA 12.8. También se incorporó nomkl para evitar conflictos entre las librerías científicas de Anaconda y PyTorch. La GPU NVIDIA GeForce RTX 4060 fue reconocida correctamente por PyTorch.
+## Que se hizo
 
-Posteriormente, se implementó EfficientNet-B0 con pesos preentrenados de ImageNet. Se reemplazó la capa final para generar 11 valores correspondientes a la curva granulométrica y se congeló inicialmente el backbone para aplicar transfer learning.
+- Se configuro el entorno Conda `utem` con PyTorch y torchvision con soporte CUDA 12.8. Se agrego `nomkl` para evitar conflictos entre librerias. PyTorch reconocio la GPU NVIDIA GeForce RTX 4060.
+- Se creo la clase `EfficientNetGranulometria` (`models/efficientnet_model.py`):
+  - Usa EfficientNet-B0 con pesos preentrenados en ImageNet.
+  - Se reemplazo la capa final por una de 11 salidas, una por cada tamano de particula.
+  - El resto de la red (backbone) se congela y solo se entrena la capa nueva. Esto es transfer learning.
+  - Tiene la opcion `unfreeze_last_blocks` para descongelar los ultimos bloques del backbone (se usa en el avance 8).
+- Se probo con `models/test_efficientnet.py` usando un batch real del dataset: prediccion, calculo de la perdida MSE y backward, sin entrenar todavia.
 
-La integración se probó con un batch real del dataset, ejecutando una predicción, el cálculo de la pérdida MSE y el algoritmo backward, sin realizar todavía un entrenamiento completo.
+## Resultados
 
-Resultados:
-
-- GPU utilizada: NVIDIA GeForce RTX 4060.
-- Entrada: `(8, 3, 512, 512)`.
-- Salida: `(8, 11)`.
-- Pérdida MSE calculada correctamente.
-- `Backward` ejecutado correctamente.
-- Pesos preentrenados descargados y cargados sin errores.
-
-Prueba de EfficientNet-B0 completada correctamente.
-- Dispositivo: cuda
-- GPU: NVIDIA GeForce RTX 4060
-- Entrada: (8, 3, 512, 512)
-- Salida: (8, 11)
-- Pérdida MSE: 5072.3462
-- Parámetros entrenables: 14,091
-- Backward ejecutado correctamente.
-
-Ambos sprints fueron completados. El entrenamiento con varias épocas, actualización de pesos, validación y fine-tuning queda como la siguiente etapa.
+- Entrada (8, 3, 512, 512) y salida (8, 11).
+- Perdida MSE inicial: 5072.35 (modelo aun sin entrenar).
+- Parametros entrenables: 14,091, que corresponden a la capa final (1280 x 11 pesos + 11 sesgos).
+- Los pesos preentrenados se cargaron y el backward se ejecuto sin errores.

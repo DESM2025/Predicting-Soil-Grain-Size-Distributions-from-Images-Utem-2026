@@ -1,11 +1,27 @@
-### Análisis exploratorio de las distribuciones granulométricas
+# 1) Analisis exploratorio de datos (EDA)
 
-Se realizó un análisis exploratorio de las 24 muestras de suelo disponibles en el conjunto de entrenamiento de la competición *Predicting Soil Grain Size Distributions from Images*. Cada muestra contiene once porcentajes acumulados correspondientes a diámetros granulométricos entre 0,002 y 200 mm.
+## Que se hizo
 
-Inicialmente, se verificó la integridad de los datos, sin identificar valores faltantes ni registros duplicados. Asimismo, el análisis de las fracciones por intervalo confirmó la coherencia de las distribuciones granulométricas, cuyos porcentajes suman el 100 % para cada muestra.
+Se analizo el archivo `datos/Training_labels_updated.csv` con el script `EDA/eda.py`. El archivo tiene 24 muestras de suelo (`sample_id`) y 11 columnas con el porcentaje acumulado de material que pasa por cada tamano de particula: 0.002, 0.0063, 0.02, 0.063, 0.2, 0.63, 2, 6.3, 20, 63 y 200 mm.
 
-Los resultados evidenciaron una alta heterogeneidad entre las distribuciones granulométricas. Las mayores desviaciones estándar se observaron en los diámetros intermedios, especialmente en 0,63 mm, donde se registró una desviación de 38,18 puntos porcentuales. Esto demuestra que las muestras presentan diferencias considerables en sus proporciones de partículas finas y gruesas.
+Se reviso:
 
-Por otra parte, el análisis de las fracciones de masa permitió identificar que los intervalos de 0,02–0,063 mm, 0,063–0,2 mm, 2–6,3 mm y 6,3–20 mm presentan las mayores proporciones medias de material. El análisis de correlaciones también evidenció relaciones positivas entre los porcentajes acumulados de diámetros cercanos, comportamiento consistente con la naturaleza acumulativa de las variables.
+- Valores faltantes y filas duplicadas.
+- Que cada curva este entre 0 y 100, que no disminuya al aumentar el tamano y que termine en 100 %.
+- Estadisticas por tamano: media, desviacion estandar y percentiles.
+- Porcentaje de material entre cada par de tamanos (fracciones por intervalo).
+- Correlacion entre tamanos.
 
-En conclusión, el análisis exploratorio demuestra que el conjunto de datos presenta una diversidad granulométrica considerable, pese a su reducido número de muestras. Esta característica supone un desafío para el entrenamiento de modelos de visión por computadora, particularmente por el riesgo de sobreajuste y la necesidad de generalizar a suelos no observados. Por ello, será fundamental utilizar técnicas de validación cruzada y evaluar cuidadosamente el comportamiento predictivo de los modelos propuestos.
+## Resultados
+
+- 24 muestras, sin valores faltantes ni filas duplicadas.
+- Las 24 curvas son validas: estan entre 0 y 100, son crecientes y terminan en 100 % en 200 mm.
+- La mayor diferencia entre muestras esta en los tamanos medios. La desviacion estandar maxima es de 38.18 puntos en 0.63 mm. En 200 mm la desviacion es 0, porque todas las muestras valen 100 %.
+- Los intervalos con mas material en promedio son 0.02-0.063 mm (15.7 %), 0.063-0.2 mm (15.5 %), 2-6.3 mm (14.7 %) y 6.3-20 mm (14.0 %).
+- Los tamanos cercanos estan correlacionados positivamente, lo esperable en una curva acumulada.
+
+## Conclusion
+
+Las muestras son muy distintas entre si y son pocas (24). Esto aumenta el riesgo de sobreajuste, por lo que el modelo se debe evaluar siempre con muestras que no vio durante el entrenamiento.
+
+Archivos generados en `EDA/graficos/`: `estadisticas_granulometricas.csv`, `fracciones_intervalos.csv` y los graficos del analisis.
