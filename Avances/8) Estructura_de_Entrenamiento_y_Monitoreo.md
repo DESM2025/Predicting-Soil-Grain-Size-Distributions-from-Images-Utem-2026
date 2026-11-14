@@ -6,7 +6,7 @@ Codigo en la carpeta `training/`:
 
 - `train.py`: entrenamiento por epocas, validacion y entrenamiento del modelo final.
 - `cross_validation.py`: creacion de los folds de la validacion cruzada.
-- `monitoring.py`: calculo de metricas (MSE, MAE, RMSE, R2 y MAE por tamano), historial y graficos.
+- `monitoring.py`: calculo de metricas (MSE, MAE, RMSE, R2 y MAE por tamaño), historial y graficos.
 - `ejecutar_validacion_cruzada.py`: vuelve a ejecutar la validacion cruzada con la configuracion final.
 
 Configuracion comun a todos los entrenamientos: perdida MSE, optimizador AdamW, weight decay 1e-4 y batch size 8. En cada epoca se registra la perdida de training, la perdida de validacion y el learning rate. Al final se usa el modelo de la epoca con menor perdida de validacion.
@@ -75,7 +75,7 @@ La columna Baseline es una referencia: predecir siempre la curva promedio del tr
 
 El grafico `resultados/entrenamiento/comparacion_configuraciones.png` (generado con `scripts/grafico_comparacion_configuraciones.py`) muestra el MAE global de las 4 configuraciones junto a la referencia.
 
-Nota sobre la configuracion 4: los resultados de esta tabla corresponden a la ejecucion del 14 de noviembre con `python -m training.ejecutar_validacion_cruzada`, guardada en `resultados/entrenamiento/validacion_cruzada/`. La ejecucion original de octubre (carpeta `finetuning_last_block_lr1e-5/`) dio un MAE global de 13.79. La diferencia es pequena y se debe a la aleatoriedad del entrenamiento en GPU. Las conclusiones no cambian.
+Nota sobre la configuracion 4: los resultados de esta tabla corresponden a la ejecucion del 14 de noviembre con `python -m training.ejecutar_validacion_cruzada`, guardada en `resultados/entrenamiento/validacion_cruzada/`. La ejecucion original de octubre (carpeta `finetuning_last_block_lr1e-5/`) dio un MAE global de 13.79. La diferencia es pequeña y se debe a la aleatoriedad del entrenamiento en GPU. Las conclusiones no cambian.
 
 ## Entrenamiento del modelo final
 
@@ -93,7 +93,7 @@ Resultados sobre la validacion:
 - RMSE: 14.12 puntos porcentuales
 - R2: -4.29
 
-MAE por tamano de particula (puntos porcentuales):
+MAE por tamaño de particula (puntos porcentuales):
 
 | mm | 0.002 | 0.0063 | 0.02 | 0.063 | 0.2 | 0.63 | 2 | 6.3 | 20 | 63 | 200 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
@@ -102,7 +102,7 @@ MAE por tamano de particula (puntos porcentuales):
 Interpretacion:
 
 - MAE de 9.47: en promedio, cada valor de la curva predicha se equivoca en 9.5 puntos porcentuales.
-- El error aumenta con el tamano de particula: es bajo en los tamanos finos (entre 1 y 6.4 puntos hasta 0.063 mm) y alto en los gruesos (entre 13.8 y 17.1 puntos desde 6.3 mm).
+- El error aumenta con el tamaño de particula: es bajo en los tamaños finos (entre 1 y 6.4 puntos hasta 0.063 mm) y alto en los gruesos (entre 13.8 y 17.1 puntos desde 6.3 mm).
 - El MAE de 9.47 no se debe comparar con el 13.60 de la validacion cruzada. El 9.47 se mide sobre solo 5 muestras de una particion. El 13.60 se mide sobre las 24 muestras y es la estimacion mas confiable del desempeno del modelo.
 
 ## Hallazgo sobre el R2
@@ -146,4 +146,4 @@ Las configuraciones 1 a 3 se ejecutaron con una version anterior de `train.py`, 
 - `resultados/entrenamiento/finetuning_last_block_lr1e-5/`: configuracion 4, ejecucion original de octubre.
 - `resultados/entrenamiento/`: modelo final (`modelo_final.pt`, `historial_entrenamiento_final.csv`, `metricas_validacion_final.csv` y graficos) y `comparacion_configuraciones.png`.
 
-Cada carpeta de configuracion contiene las metricas, el historial y el grafico de perdida de cada fold, el resumen global (`metrics_summary.csv`) y los graficos de valores reales contra predichos, MAE por tamano y curvas granulometricas.
+Cada carpeta de configuracion contiene las metricas, el historial y el grafico de perdida de cada fold, el resumen global (`metrics_summary.csv`) y los graficos de valores reales contra predichos, MAE por tamaño y curvas granulometricas.

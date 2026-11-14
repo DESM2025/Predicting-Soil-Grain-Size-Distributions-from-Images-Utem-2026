@@ -5,7 +5,7 @@
 - Se configuro el entorno Conda `utem` con PyTorch y torchvision con soporte CUDA 12.8. Se agrego `nomkl` para evitar conflictos entre librerias. PyTorch reconocio la GPU NVIDIA GeForce RTX 4060.
 - Se creo la clase `EfficientNetGranulometria` (`models/efficientnet_model.py`):
   - Usa EfficientNet-B0 con pesos preentrenados en ImageNet.
-  - Se reemplazo la capa final por una de 11 salidas, una por cada tamano de particula.
+  - Se reemplazo la capa final por una de 11 salidas, una por cada tamaño de particula.
   - El resto de la red (backbone) se congela y solo se entrena la capa nueva. Esto es transfer learning.
   - Tiene la opcion `unfreeze_last_blocks` para descongelar los ultimos bloques del backbone (se usa en el avance 8).
 - Se probo con `models/test_efficientnet.py` usando un batch real del dataset: prediccion, calculo de la perdida MSE y backward, sin entrenar todavia.

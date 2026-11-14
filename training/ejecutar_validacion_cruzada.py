@@ -1,10 +1,10 @@
-"""Validacion cruzada agrupada de la configuracion final.
+"""Validación cruzada agrupada de la configuración final.
 
-Ejecuta la misma configuracion usada en el entrenamiento final, pero evaluada
+Ejecuta la misma configuración usada en el entrenamiento final, pero evaluada
 con K folds agrupados por sample_id. Los resultados se guardan en una carpeta
 propia, separada del entrenamiento final, para tener respaldo de ambos.
 
-Uso (desde la raiz del proyecto):
+Uso (desde la raíz del proyecto):
     python -m training.ejecutar_validacion_cruzada
     python -m training.ejecutar_validacion_cruzada --epochs 20 --n-splits 5
 """
@@ -30,11 +30,11 @@ def describe_folds(
     n_splits: int,
     random_state: int,
 ) -> tuple[pd.DataFrame, float]:
-    """Cantidad de imagenes y muestras por fold, y MAE del baseline.
+    """Cantidad de imágenes y muestras por fold, y MAE del baseline.
 
     El baseline predice siempre la curva promedio del training de cada fold,
     sin mirar la imagen. Devuelve la tabla por fold y el MAE global del
-    baseline calculado sobre todas las imagenes de validacion juntas.
+    baseline calculado sobre todas las imágenes de validación juntas.
     """
     dataframe = pd.read_csv(csv_path)
     folds = create_grouped_folds(dataframe, n_splits, random_state)
@@ -92,7 +92,7 @@ def save_fold_summary(
     extra_rows = pd.DataFrame(
         [
             {
-                "fold": "global (todas las imagenes juntas)",
+                "fold": "global (todas las imágenes juntas)",
                 "imagenes_validacion": int(summary["imagenes_validacion"].sum()),
                 "muestras_validacion": int(summary["muestras_validacion"].sum()),
                 **{name: global_metrics[name] for name in ("mae", "rmse", "mse", "r2")},
@@ -103,7 +103,7 @@ def save_fold_summary(
                 **summary[metric_columns].mean().to_dict(),
             },
             {
-                "fold": "desviacion estandar entre folds",
+                "fold": "desviación estándar entre folds",
                 **summary[metric_columns].std().to_dict(),
             },
         ]
@@ -115,7 +115,7 @@ def save_fold_summary(
 
 def parse_arguments() -> Namespace:
     parser = ArgumentParser(
-        description="Validacion cruzada agrupada de la configuracion final."
+        description="Validación cruzada agrupada de la configuración final."
     )
     parser.add_argument("--n-splits", type=int, default=5)
     parser.add_argument("--epochs", type=int, default=20)
@@ -151,7 +151,7 @@ def main() -> None:
     fold_info, global_baseline = describe_folds(
         CSV_PATH, arguments.n_splits, arguments.random_state
     )
-    print("Composicion de los folds:")
+    print("Composición de los folds:")
     print(fold_info.drop(columns="baseline_mae").to_string(index=False))
 
     results = run_cross_validation(

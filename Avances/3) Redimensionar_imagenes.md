@@ -9,7 +9,7 @@ Se creo el script `scripts/redimensionar_imagenes.py` (libreria Pillow). Para ca
 - Corrige la orientacion segun los datos EXIF de la foto.
 - No agranda imagenes que ya son mas chicas.
 - Guarda el resultado en una carpeta aparte, sin modificar las fotos originales.
-- Genera el reporte `datos/datos_procesados/reporte_redimensionamiento.csv` con el tamano original, el tamano nuevo y la escala de cada imagen.
+- Genera el reporte `datos/datos_procesados/reporte_redimensionamiento.csv` con el tamaño original, el tamaño nuevo y la escala de cada imagen.
 
 ## Resultados
 

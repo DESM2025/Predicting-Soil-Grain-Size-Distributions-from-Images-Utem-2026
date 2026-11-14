@@ -1,6 +1,6 @@
-"""Grafico del MAE global de las 4 configuraciones comparadas con validacion cruzada.
+"""Gráfico del MAE global de las 4 configuraciones comparadas con validación cruzada.
 
-Uso (desde la raiz del proyecto):
+Uso (desde la raíz del proyecto):
     python scripts/grafico_comparacion_configuraciones.py
 """
 
@@ -15,10 +15,10 @@ RESULTS_DIR = PROJECT_DIR / "resultados" / "entrenamiento"
 OUTPUT_PATH = RESULTS_DIR / "comparacion_configuraciones.png"
 
 CONFIGURATIONS = [
-    ("1. Backbone congelado\nlr 1e-3, 10 epocas", "monitoreo_validacion_cruzada"),
-    ("2. Backbone congelado\nlr 1e-4, 20 epocas", "adamw_lr1e-4_20epocas"),
-    ("3. Backbone congelado\nlr 1e-3, 20 epocas", "adamw_lr1e-3_20epocas"),
-    ("4. Ultimo bloque descongelado\nlr 1e-3 / 1e-5, 20 epocas", "validacion_cruzada"),
+    ("1. Backbone congelado\nlr 1e-3, 10 épocas", "monitoreo_validacion_cruzada"),
+    ("2. Backbone congelado\nlr 1e-4, 20 épocas", "adamw_lr1e-4_20epocas"),
+    ("3. Backbone congelado\nlr 1e-3, 20 épocas", "adamw_lr1e-3_20epocas"),
+    ("4. Último bloque descongelado\nlr 1e-3 / 1e-5, 20 épocas", "validacion_cruzada"),
 ]
 
 SURFACE = "#fcfcfb"
@@ -65,7 +65,7 @@ def main() -> None:
     figure.text(
         0.015,
         0.925,
-        f"Linea punteada: referencia sin mirar la imagen (predecir la curva promedio), MAE {baseline:.2f}",
+        f"Línea punteada: referencia sin mirar la imagen (predecir la curva promedio), MAE {baseline:.2f}",
         ha="left",
         va="top",
         fontsize=9,
@@ -77,7 +77,7 @@ def main() -> None:
     figure.text(
         0.015,
         0.975,
-        "MAE global por configuracion en validacion cruzada de 5 folds (menor es mejor)",
+        "MAE global por configuración en validación cruzada de 5 folds (menor es mejor)",
         ha="left",
         va="top",
         fontsize=12,
@@ -93,7 +93,7 @@ def main() -> None:
     figure.tight_layout(rect=(0, 0, 1, 0.88))
     figure.savefig(OUTPUT_PATH, dpi=160, facecolor=SURFACE)
     plt.close(figure)
-    print(f"Grafico guardado en: {OUTPUT_PATH}")
+    print(f"Gráfico guardado en: {OUTPUT_PATH}")
 
 
 if __name__ == "__main__":
